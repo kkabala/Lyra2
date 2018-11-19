@@ -158,14 +158,10 @@ namespace Kabala.Lyra2
 		{
 			Array.Clear(state, 0, state.Length);
 
-			state[8] = blake2b_IV[0];
-			state[9] = blake2b_IV[1];
-			state[10] = blake2b_IV[2];
-			state[11] = blake2b_IV[3];
-			state[12] = blake2b_IV[4];
-			state[13] = blake2b_IV[5];
-			state[14] = blake2b_IV[6];
-			state[15] = blake2b_IV[7];
+			for (int i = 8; i < 16; i++)
+			{
+				state[i] = blake2b_IV[i-8];
+			}
 		}
 	}
 }

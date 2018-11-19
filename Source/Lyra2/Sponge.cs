@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace Kabala.Lyra2
 {
-    public class Sponge
+	public class Sponge
 	{
 		private ulong[] state;
 		private MemoryMatrix memoryMatrix;
@@ -65,14 +65,10 @@ namespace Kabala.Lyra2
 		public void AbsorbBlockBlake2Safe(byte[] inByteArray)
 		{
 			var inArray = ConvertByteToUInt64Array(inByteArray);
-			state[0] ^= inArray[0];
-			state[1] ^= inArray[1];
-			state[2] ^= inArray[2];
-			state[3] ^= inArray[3];
-			state[4] ^= inArray[4];
-			state[5] ^= inArray[5];
-			state[6] ^= inArray[6];
-			state[7] ^= inArray[7];
+			for (int i = 0; i < 8; i++)
+			{
+				state[i] ^= inArray[i];
+			}
 
 			Blake2bLyra(12);
 		}
@@ -106,51 +102,22 @@ namespace Kabala.Lyra2
 				//Output: goes to previous column
 				ulong ptrWordOut = nCols - 1 - i;
 				//Input: next column (i.e., next block in sequence)
-				ulong ptrWordIn = i;
 
 				//caching the values - for speed purposes and not duplicating the same code
-				var ptrWordIn0 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 0);
-				var ptrWordIn1 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 1);
-				var ptrWordIn2 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 2);
-				var ptrWordIn3 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 3);
-				var ptrWordIn4 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 4);
-				var ptrWordIn5 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 5);
-				var ptrWordIn6 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 6);
-				var ptrWordIn7 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 7);
-				var ptrWordIn8 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 8);
-				var ptrWordIn9 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 9);
-				var ptrWordIn10 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 10);
-				var ptrWordIn11 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordIn, 11);
-
-				state[0] ^= ptrWordIn0;
-				state[1] ^= ptrWordIn1;
-				state[2] ^= ptrWordIn2;
-				state[3] ^= ptrWordIn3;
-				state[4] ^= ptrWordIn4;
-				state[5] ^= ptrWordIn5;
-				state[6] ^= ptrWordIn6;
-				state[7] ^= ptrWordIn7;
-				state[8] ^= ptrWordIn8;
-				state[9] ^= ptrWordIn9;
-				state[10] ^= ptrWordIn10;
-				state[11] ^= ptrWordIn11;
+				var ptrWordIn = new ulong[12];
+				var ptrWordInOut = new ulong[12];
+				for (int k = 0; k < 12; k++)
+				{
+					ptrWordIn[k] = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, i, k);
+					state[k] ^= ptrWordIn[k];
+				}
 
 				Blake2bLyra(1);
 
-				var ptrWordOutNewBlockData = new[]
+				var ptrWordOutNewBlockData = new ulong[12];
+				for (int k = 0; k < 12; k++)
 				{
-					ptrWordIn0 ^ state[0],
-					ptrWordIn1 ^ state[1],
-					ptrWordIn2 ^ state[2],
-					ptrWordIn3 ^ state[3],
-					ptrWordIn4 ^ state[4],
-					ptrWordIn5 ^ state[5],
-					ptrWordIn6 ^ state[6],
-					ptrWordIn7 ^ state[7],
-					ptrWordIn8 ^ state[8],
-					ptrWordIn9 ^ state[9],
-					ptrWordIn10 ^ state[10],
-					ptrWordIn11 ^ state[11]
+					ptrWordOutNewBlockData[k] = ptrWordIn[k] ^ state[k];
 				};
 
 				memoryMatrix.SetColumnWithBlockData(rowOut, ptrWordOut, ptrWordOutNewBlockData);
@@ -169,90 +136,36 @@ namespace Kabala.Lyra2
 				ulong ptrWordInColumn = i;
 
 				//caching the values - for speed purposes and not duplicating the same code
-				var ptrWordIn0 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 0);
-				var ptrWordIn1 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 1);
-				var ptrWordIn2 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 2);
-				var ptrWordIn3 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 3);
-				var ptrWordIn4 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 4);
-				var ptrWordIn5 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 5);
-				var ptrWordIn6 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 6);
-				var ptrWordIn7 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 7);
-				var ptrWordIn8 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 8);
-				var ptrWordIn9 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 9);
-				var ptrWordIn10 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 10);
-				var ptrWordIn11 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, 11);
-
-				var ptrWordInOut0 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 0);
-				var ptrWordInOut1 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 1);
-				var ptrWordInOut2 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 2);
-				var ptrWordInOut3 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 3);
-				var ptrWordInOut4 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 4);
-				var ptrWordInOut5 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 5);
-				var ptrWordInOut6 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 6);
-				var ptrWordInOut7 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 7);
-				var ptrWordInOut8 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 8);
-				var ptrWordInOut9 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 9);
-				var ptrWordInOut10 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 10);
-				var ptrWordInOut11 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, 11);
-
-				state[0] ^= ptrWordIn0 + ptrWordInOut0;
-				state[1] ^= ptrWordIn1 + ptrWordInOut1;
-				state[2] ^= ptrWordIn2 + ptrWordInOut2;
-				state[3] ^= ptrWordIn3 + ptrWordInOut3;
-				state[4] ^= ptrWordIn4 + ptrWordInOut4;
-				state[5] ^= ptrWordIn5 + ptrWordInOut5;
-				state[6] ^= ptrWordIn6 + ptrWordInOut6;
-				state[7] ^= ptrWordIn7 + ptrWordInOut7;
-				state[8] ^= ptrWordIn8 + ptrWordInOut8;
-				state[9] ^= ptrWordIn9 + ptrWordInOut9;
-				state[10] ^= ptrWordIn10 + ptrWordInOut10;
-				state[11] ^= ptrWordIn11 + ptrWordInOut11;
+				var ptrWordIn = new ulong[12];
+				var ptrWordInOut = new ulong[12];
+				for (int k = 0; k < 12; k++)
+				{
+					ptrWordIn[k] = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordInColumn, k);
+					ptrWordInOut[k] = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordInColumn, k);
+					state[k] ^= ptrWordIn[k] + ptrWordInOut[k];
+				}
 
 				//Applies the reduced-round transformation f to the sponge's v_state
 				Blake2bLyra(1);
 
 				//M[row][C-1-col] = M[prev][col] XOR rand
-				var ptrWordOutNewBlockData = new[]
+				var ptrWordOutNewBlockData = new ulong[12];
+				var ptrWordInOutNewBlockData = new ulong[12];
+
+				for (int k = 0; k < 12; k++)
 				{
-					ptrWordIn0 ^ state[0],
-					ptrWordIn1 ^ state[1],
-					ptrWordIn2 ^ state[2],
-					ptrWordIn3 ^ state[3],
-					ptrWordIn4 ^ state[4],
-					ptrWordIn5 ^ state[5],
-					ptrWordIn6 ^ state[6],
-					ptrWordIn7 ^ state[7],
-					ptrWordIn8 ^ state[8],
-					ptrWordIn9 ^ state[9],
-					ptrWordIn10 ^ state[10],
-					ptrWordIn11 ^ state[11]
-				};
+					ptrWordOutNewBlockData[k] = ptrWordIn[k] ^ state[k];
+					var shiftedIterator = k - 1 < 0 ? 11 : k - 1;
+					ptrWordInOutNewBlockData[k] = ptrWordInOut[k] ^ state[shiftedIterator];
+				}
 
 				memoryMatrix.SetColumnWithBlockData(rowOut, ptrWordOutColumn, ptrWordOutNewBlockData);
-
-				//M[row*][col] = M[row*][col] XOR rotW(rand)
-				var ptrWordInOutNewBlockData = new[]
-				{
-					ptrWordInOut0 ^ state[11],
-					ptrWordInOut1 ^ state[0],
-					ptrWordInOut2 ^ state[1],
-					ptrWordInOut3 ^ state[2],
-					ptrWordInOut4 ^ state[3],
-					ptrWordInOut5 ^ state[4],
-					ptrWordInOut6 ^ state[5],
-					ptrWordInOut7 ^ state[6],
-					ptrWordInOut8 ^ state[7],
-					ptrWordInOut9 ^ state[8],
-					ptrWordInOut10 ^ state[9],
-					ptrWordInOut11 ^ state[10]
-				};
 
 				memoryMatrix.SetColumnWithBlockData(rowInOut, ptrWordInColumn, ptrWordInOutNewBlockData);
 			}
 		}
 
-		public void ReducedDuplexRow(ulong rowIn, ulong rowInOut, ulong rowOut,
-			ulong nCols)
+		public void ReducedDuplexRow(ulong rowIn, ulong rowInOut, ulong rowOut, ulong nCols)
 		{
 			for (ulong i = 0; i < nCols; i++)
 			{
@@ -261,96 +174,33 @@ namespace Kabala.Lyra2
 				//INPUT AND OUTPUT COLUMN IS HERE THE SAME!
 				ulong ptrWordColumn = i;
 
-				//caching the values - for speed purposes and not duplicating the same code
-				var ptrWordIn0 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 0);
-				var ptrWordIn1 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 1);
-				var ptrWordIn2 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 2);
-				var ptrWordIn3 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 3);
-				var ptrWordIn4 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 4);
-				var ptrWordIn5 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 5);
-				var ptrWordIn6 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 6);
-				var ptrWordIn7 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 7);
-				var ptrWordIn8 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 8);
-				var ptrWordIn9 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 9);
-				var ptrWordIn10 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 10);
-				var ptrWordIn11 = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, 11);
+				var ptrWordInOutGenerator = new Func<int, ulong>((blockDataColumn) => memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, blockDataColumn));
+				var ptrWordIn = new ulong[12];
 
-				var ptrWordInOut0 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 0);
-				var ptrWordInOut1 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 1);
-				var ptrWordInOut2 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 2);
-				var ptrWordInOut3 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 3);
-				var ptrWordInOut4 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 4);
-				var ptrWordInOut5 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 5);
-				var ptrWordInOut6 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 6);
-				var ptrWordInOut7 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 7);
-				var ptrWordInOut8 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 8);
-				var ptrWordInOut9 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 9);
-				var ptrWordInOut10 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 10);
-				var ptrWordInOut11 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 11);
-
-				state[0] ^= ptrWordIn0 + ptrWordInOut0;
-				state[1] ^= ptrWordIn1 + ptrWordInOut1;
-				state[2] ^= ptrWordIn2 + ptrWordInOut2;
-				state[3] ^= ptrWordIn3 + ptrWordInOut3;
-				state[4] ^= ptrWordIn4 + ptrWordInOut4;
-				state[5] ^= ptrWordIn5 + ptrWordInOut5;
-				state[6] ^= ptrWordIn6 + ptrWordInOut6;
-				state[7] ^= ptrWordIn7 + ptrWordInOut7;
-				state[8] ^= ptrWordIn8 + ptrWordInOut8;
-				state[9] ^= ptrWordIn9 + ptrWordInOut9;
-				state[10] ^= ptrWordIn10 + ptrWordInOut10;
-				state[11] ^= ptrWordIn11 + ptrWordInOut11;
+				for (int k = 0; k < 12; k++)
+				{
+					ptrWordIn[k] = memoryMatrix.GetOneValueFromColumnBlockData(rowIn, ptrWordColumn, k);
+					state[k] ^= ptrWordIn[k] + ptrWordInOutGenerator(k);
+				}
 
 				Blake2bLyra(1);
 
-				var ptrWordOutNewBlockData = new[]
+				var ptrWordOutNewBlockData = new ulong[12];
+
+				for (int k = 0; k < 12; k++)
 				{
-					//setting ptrWordOut
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 0) ^ state[0],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 1) ^ state[1],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 2) ^ state[2],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 3) ^ state[3],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 4) ^ state[4],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 5) ^ state[5],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 6) ^ state[6],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 7) ^ state[7],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 8) ^ state[8],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 9) ^ state[9],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 10) ^ state[10],
-					memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, 11) ^ state[11]
+					ptrWordOutNewBlockData[k] = memoryMatrix.GetOneValueFromColumnBlockData(rowOut, ptrWordColumn, k) ^ state[k];
 				};
 
 				memoryMatrix.SetColumnWithBlockData(rowOut, ptrWordColumn, ptrWordOutNewBlockData);
 
-				// Get new values in case that rowOut == rowInOut
-				ptrWordInOut0 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 0);
-				ptrWordInOut1 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 1);
-				ptrWordInOut2 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 2);
-				ptrWordInOut3 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 3);
-				ptrWordInOut4 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 4);
-				ptrWordInOut5 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 5);
-				ptrWordInOut6 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 6);
-				ptrWordInOut7 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 7);
-				ptrWordInOut8 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 8);
-				ptrWordInOut9 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 9);
-				ptrWordInOut10 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 10);
-				ptrWordInOut11 = memoryMatrix.GetOneValueFromColumnBlockData(rowInOut, ptrWordColumn, 11);
+				var ptrWordInOutNewBlockData = new ulong[12];
 
-				var ptrWordInOutNewBlockData = new ulong[]
+				for (int k = 0; k < 12; k++)
 				{
-					ptrWordInOut0 ^ state[11],
-					ptrWordInOut1 ^ state[0],
-					ptrWordInOut2 ^ state[1],
-					ptrWordInOut3 ^ state[2],
-					ptrWordInOut4 ^ state[3],
-					ptrWordInOut5 ^ state[4],
-					ptrWordInOut6 ^ state[5],
-					ptrWordInOut7 ^ state[6],
-					ptrWordInOut8 ^ state[7],
-					ptrWordInOut9 ^ state[8],
-					ptrWordInOut10 ^ state[9],
-					ptrWordInOut11 ^ state[10]
-				};
+					var shiftedIterator = k - 1 < 0 ? 11 : k - 1;
+					ptrWordInOutNewBlockData[k] = ptrWordInOutGenerator(k) ^ state[shiftedIterator];
+				}
 
 				memoryMatrix.SetColumnWithBlockData(rowInOut, ptrWordColumn, ptrWordInOutNewBlockData);
 			}
@@ -358,18 +208,10 @@ namespace Kabala.Lyra2
 
 		public void AbsorbBlock(long rowa)
 		{
-			state[0] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 0);
-			state[1] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 1);
-			state[2] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 2);
-			state[3] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 3);
-			state[4] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 4);
-			state[5] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 5);
-			state[6] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 6);
-			state[7] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 7);
-			state[8] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 8);
-			state[9] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 9);
-			state[10] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 10);
-			state[11] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, 11);
+			for (int i = 0; i < 12; i++)
+			{
+				state[i] ^= memoryMatrix.GetOneValueFromColumnBlockData((ulong)rowa, 0, i);
+			}
 
 			Blake2bLyra(12);
 		}

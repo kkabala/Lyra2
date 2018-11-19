@@ -1,4 +1,14 @@
-﻿using System;
+﻿/***********************************************************************
+
+	Lyra2 .NET implementation written by Krzysztof Kabała <krzykab@gmail.com>.
+	It is distributed under MIT license.
+	It is based on C implementation written by The Lyra PHC Team, 
+	which can be found here: https://github.com/gincoin-dev/gincoin-core/blob/master/src/crypto/Lyra2Z/Lyra2.c 
+	Distribution of this file or code is only allowed with this header.
+
+
+/***********************************************************************/
+using System;
 using System.Linq;
 
 namespace Kabala.Lyra2
